@@ -40,6 +40,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let searchQuery = "";
   let currentDay = "";
   let currentTimeRange = "";
+  let sharedActivityName = "";
+  let hasScrolledToSharedActivity = false;
 
   // Authentication state
   let currentUser = null;
@@ -50,6 +52,20 @@ document.addEventListener("DOMContentLoaded", () => {
     afternoon: { start: "15:00", end: "18:00" }, // After school hours
     weekend: { days: ["Saturday", "Sunday"] }, // Weekend days
   };
+
+  function initializeSharedActivity() {
+    const selectedActivity = new URLSearchParams(window.location.search).get(
+      "activity"
+    );
+
+    if (!selectedActivity) {
+      return;
+    }
+
+    sharedActivityName = selectedActivity;
+    searchQuery = selectedActivity;
+    searchInput.value = selectedActivity;
+  }
 
   // Initialize filters from active elements
   function initializeFilters() {
@@ -304,6 +320,69 @@ document.addEventListener("DOMContentLoaded", () => {
     return details.schedule;
   }
 
+  function buildActivityShareUrl(activityName) {
+    const shareUrl = new URL(window.location.href);
+    shareUrl.searchParams.set("activity", activityName);
+    return shareUrl.toString();
+  }
+
+  function buildActivityShareText(activityName, details) {
+    return `Check out ${activityName} at Mergington High School. ${formatSchedule(
+      details
+    )}.`;
+  }
+
+  async function copyTextToClipboard(text) {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+
+    const temporaryTextArea = document.createElement("textarea");
+    temporaryTextArea.value = text;
+    temporaryTextArea.setAttribute("readonly", "");
+    temporaryTextArea.style.position = "absolute";
+    temporaryTextArea.style.left = "-9999px";
+    document.body.appendChild(temporaryTextArea);
+    temporaryTextArea.select();
+    document.execCommand("copy");
+    document.body.removeChild(temporaryTextArea);
+  }
+
+  async function copyActivityLink(activityName) {
+    try {
+      await copyTextToClipboard(buildActivityShareUrl(activityName));
+      showMessage(`${activityName} link copied. Share it with a friend!`, "success");
+    } catch (error) {
+      console.error("Error copying activity link:", error);
+      showMessage("Unable to copy the activity link right now.", "error");
+    }
+  }
+
+  async function shareActivity(activityName, details) {
+    const shareUrl = buildActivityShareUrl(activityName);
+    const shareText = buildActivityShareText(activityName, details);
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${activityName} | Mergington High School`,
+          text: shareText,
+          url: shareUrl,
+        });
+        return;
+      } catch (error) {
+        if (error.name === "AbortError") {
+          return;
+        }
+
+        console.error("Error sharing activity:", error);
+      }
+    }
+
+    await copyActivityLink(activityName);
+  }
+
   // Function to determine activity type (this would ideally come from backend)
   function getActivityType(activityName, description) {
     const name = activityName.toLowerCase();
@@ -471,12 +550,34 @@ document.addEventListener("DOMContentLoaded", () => {
     Object.entries(filteredActivities).forEach(([name, details]) => {
       renderActivityCard(name, details);
     });
+
+    highlightSharedActivityCard();
+  }
+
+  function highlightSharedActivityCard() {
+    const highlightedCard = Array.from(
+      activitiesList.querySelectorAll(".activity-card")
+    ).find((card) => card.dataset.activityName === sharedActivityName);
+
+    if (!highlightedCard) {
+      return;
+    }
+
+    highlightedCard.classList.add("shared-activity");
+
+    if (hasScrolledToSharedActivity) {
+      return;
+    }
+
+    highlightedCard.scrollIntoView({ behavior: "smooth", block: "center" });
+    hasScrolledToSharedActivity = true;
   }
 
   // Function to render a single activity card
   function renderActivityCard(name, details) {
     const activityCard = document.createElement("div");
     activityCard.className = "activity-card";
+    activityCard.dataset.activityName = name;
 
     // Calculate spots and capacity
     const totalSpots = details.max_participants;
@@ -553,6 +654,10 @@ document.addEventListener("DOMContentLoaded", () => {
             .join("")}
         </ul>
       </div>
+      <div class="share-actions">
+        <button type="button" class="share-button">Share</button>
+        <button type="button" class="copy-link-button">Copy Link</button>
+      </div>
       <div class="activity-card-actions">
         ${
           currentUser
@@ -587,6 +692,17 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     }
+
+    const shareButton = activityCard.querySelector(".share-button");
+    const copyLinkButton = activityCard.querySelector(".copy-link-button");
+
+    shareButton.addEventListener("click", () => {
+      shareActivity(name, details);
+    });
+
+    copyLinkButton.addEventListener("click", () => {
+      copyActivityLink(name);
+    });
 
     activitiesList.appendChild(activityCard);
   }
@@ -865,5 +981,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize app
   checkAuthentication();
   initializeFilters();
+  initializeSharedActivity();
   fetchActivities();
 });
