@@ -572,10 +572,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Apply difficulty filter
       const activityDifficulty = normalizeActivityDifficulty(details);
-      if (currentDifficulty === "all-levels" && activityDifficulty) {
-        return;
-      }
-
       if (
         currentDifficulty &&
         currentDifficulty !== "all-levels" &&
