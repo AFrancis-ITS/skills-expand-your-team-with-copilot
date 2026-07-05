@@ -24,7 +24,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("login-form");
   const closeLoginModal = document.querySelector(".close-login-modal");
   const loginMessage = document.getElementById("login-message");
-  const schoolName = "Mergington High School";
+  const schoolName =
+    document.querySelector("header h1")?.textContent?.trim() ||
+    "Mergington High School";
 
   // Activity categories with corresponding colors
   const activityTypes = {
@@ -712,6 +714,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const shareButton = activityCard.querySelector(".share-button");
     const copyLinkButton = activityCard.querySelector(".copy-link-button");
+    shareButton.setAttribute("aria-label", `Share ${name} activity`);
+    copyLinkButton.setAttribute("aria-label", `Copy link for ${name} activity`);
 
     shareButton.addEventListener("click", () => {
       shareActivity(name, details);
