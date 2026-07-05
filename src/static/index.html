@@ -107,7 +107,13 @@
               <!-- Activities will be loaded here -->
               <p>Loading activities...</p>
             </div>
-            <div id="message" class="hidden message"></div>
+            <div
+              id="message"
+              class="hidden message"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            ></div>
           </div>
         </div>
       </section>
@@ -164,7 +170,13 @@
           </div>
           <button type="submit">Login</button>
         </form>
-        <div id="login-message" class="hidden message"></div>
+        <div
+          id="login-message"
+          class="hidden message"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        ></div>
       </div>
     </div>
 

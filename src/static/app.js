@@ -24,6 +24,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("login-form");
   const closeLoginModal = document.querySelector(".close-login-modal");
   const loginMessage = document.getElementById("login-message");
+  const schoolName =
+    document.querySelector("header h1")?.textContent?.trim() ||
+    "Mergington High School";
 
   // Activity categories with corresponding colors
   const activityTypes = {
@@ -40,6 +43,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let searchQuery = "";
   let currentDay = "";
   let currentTimeRange = "";
+  let currentSharedActivityName = "";
+  let hasScrolledToCurrentSharedActivity = false;
 
   // Authentication state
   let currentUser = null;
@@ -50,6 +55,20 @@ document.addEventListener("DOMContentLoaded", () => {
     afternoon: { start: "15:00", end: "18:00" }, // After school hours
     weekend: { days: ["Saturday", "Sunday"] }, // Weekend days
   };
+
+  function initializeSharedActivity() {
+    const selectedActivity = new URLSearchParams(window.location.search).get(
+      "activity"
+    );
+
+    if (!selectedActivity) {
+      return;
+    }
+
+    currentSharedActivityName = selectedActivity;
+    searchQuery = selectedActivity;
+    searchInput.value = selectedActivity;
+  }
 
   // Initialize filters from active elements
   function initializeFilters() {
@@ -304,6 +323,83 @@ document.addEventListener("DOMContentLoaded", () => {
     return details.schedule;
   }
 
+  function buildActivityShareUrl(activityName) {
+    const shareUrl = new URL(window.location.href);
+    shareUrl.searchParams.set("activity", activityName);
+    return shareUrl.toString();
+  }
+
+  function buildActivityShareText(activityName, details) {
+    const formattedSchedule = formatSchedule(details).replace(/[.?!]+$/, "");
+    return `Check out ${activityName} at ${schoolName}. ${formattedSchedule}.`;
+  }
+
+  async function copyTextToClipboard(text) {
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (error) {
+        console.error("Clipboard API copy failed, trying fallback:", error);
+      }
+    }
+
+    const temporaryTextArea = document.createElement("textarea");
+    temporaryTextArea.value = text;
+    temporaryTextArea.setAttribute("readonly", "");
+    temporaryTextArea.style.position = "absolute";
+    temporaryTextArea.style.left = "-9999px";
+    document.body.appendChild(temporaryTextArea);
+    temporaryTextArea.select();
+    const copySucceeded = document.execCommand("copy");
+    document.body.removeChild(temporaryTextArea);
+    return copySucceeded;
+  }
+
+  async function copyActivityLink(activityName) {
+    try {
+      const copySucceeded = await copyTextToClipboard(
+        buildActivityShareUrl(activityName)
+      );
+
+      if (!copySucceeded) {
+        throw new Error("Copy command was not successful");
+      }
+
+      showMessage(`${activityName} link copied. Share it with a friend!`, "success");
+    } catch (error) {
+      console.error("Error copying activity link:", error);
+      showMessage(
+        "We could not copy the link. Please try again or copy the page address manually.",
+        "error"
+      );
+    }
+  }
+
+  async function shareActivity(activityName, details) {
+    const shareUrl = buildActivityShareUrl(activityName);
+    const shareText = buildActivityShareText(activityName, details);
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${activityName} | ${schoolName}`,
+          text: shareText,
+          url: shareUrl,
+        });
+        return;
+      } catch (error) {
+        if (error.name === "AbortError") {
+          return;
+        }
+
+        console.error("Error sharing activity:", error);
+      }
+    }
+
+    await copyActivityLink(activityName);
+  }
+
   // Function to determine activity type (this would ideally come from backend)
   function getActivityType(activityName, description) {
     const name = activityName.toLowerCase();
@@ -471,12 +567,43 @@ document.addEventListener("DOMContentLoaded", () => {
     Object.entries(filteredActivities).forEach(([name, details]) => {
       renderActivityCard(name, details);
     });
+
+    highlightSharedActivityCard();
+  }
+
+  function highlightSharedActivityCard() {
+    const highlightedCard = currentSharedActivityName
+      ? activitiesList.querySelector(
+          `[data-activity-name="${CSS.escape(currentSharedActivityName)}"]`
+        )
+      : null;
+
+    if (!highlightedCard) {
+      return;
+    }
+
+    highlightedCard.classList.add("shared-activity");
+
+    if (hasScrolledToCurrentSharedActivity) {
+      return;
+    }
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    highlightedCard.scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+      block: "center",
+    });
+    hasScrolledToCurrentSharedActivity = true;
   }
 
   // Function to render a single activity card
   function renderActivityCard(name, details) {
     const activityCard = document.createElement("div");
     activityCard.className = "activity-card";
+    activityCard.dataset.activityName = name;
 
     // Calculate spots and capacity
     const totalSpots = details.max_participants;
@@ -553,6 +680,10 @@ document.addEventListener("DOMContentLoaded", () => {
             .join("")}
         </ul>
       </div>
+      <div class="share-actions">
+        <button type="button" class="share-button">Share</button>
+        <button type="button" class="copy-link-button">Copy Link</button>
+      </div>
       <div class="activity-card-actions">
         ${
           currentUser
@@ -587,6 +718,19 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     }
+
+    const shareButton = activityCard.querySelector(".share-button");
+    const copyLinkButton = activityCard.querySelector(".copy-link-button");
+    shareButton.setAttribute("aria-label", `Share ${name} activity`);
+    copyLinkButton.setAttribute("aria-label", `Copy link for ${name} activity`);
+
+    shareButton.addEventListener("click", () => {
+      shareActivity(name, details);
+    });
+
+    copyLinkButton.addEventListener("click", () => {
+      copyActivityLink(name);
+    });
 
     activitiesList.appendChild(activityCard);
   }
@@ -865,5 +1009,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize app
   checkAuthentication();
   initializeFilters();
+  initializeSharedActivity();
   fetchActivities();
 });
