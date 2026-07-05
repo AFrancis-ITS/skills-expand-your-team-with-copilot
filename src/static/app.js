@@ -43,8 +43,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let searchQuery = "";
   let currentDay = "";
   let currentTimeRange = "";
-  let sharedActivityName = "";
-  let hasScrolledToSharedActivity = false;
+  let currentSharedActivityName = "";
+  let hasScrolledToCurrentSharedActivity = false;
 
   // Authentication state
   let currentUser = null;
@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    sharedActivityName = selectedActivity;
+    currentSharedActivityName = selectedActivity;
     searchQuery = selectedActivity;
     searchInput.value = selectedActivity;
   }
@@ -330,9 +330,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function buildActivityShareText(activityName, details) {
-    return `Check out ${activityName} at ${schoolName}. ${formatSchedule(
-      details
-    )}.`;
+    const formattedSchedule = formatSchedule(details).replace(/[.?!]+$/, "");
+    return `Check out ${activityName} at ${schoolName}. ${formattedSchedule}.`;
   }
 
   async function copyTextToClipboard(text) {
@@ -352,16 +351,18 @@ document.addEventListener("DOMContentLoaded", () => {
     temporaryTextArea.style.left = "-9999px";
     document.body.appendChild(temporaryTextArea);
     temporaryTextArea.select();
-    const isCopied = document.execCommand("copy");
+    const copySucceeded = document.execCommand("copy");
     document.body.removeChild(temporaryTextArea);
-    return isCopied;
+    return copySucceeded;
   }
 
   async function copyActivityLink(activityName) {
     try {
-      const isCopied = await copyTextToClipboard(buildActivityShareUrl(activityName));
+      const copySucceeded = await copyTextToClipboard(
+        buildActivityShareUrl(activityName)
+      );
 
-      if (!isCopied) {
+      if (!copySucceeded) {
         throw new Error("Copy command was not successful");
       }
 
@@ -571,9 +572,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function highlightSharedActivityCard() {
-    const highlightedCard = Array.from(
-      activitiesList.querySelectorAll(".activity-card")
-    ).find((card) => card.dataset.activityName === sharedActivityName);
+    const highlightedCard = currentSharedActivityName
+      ? activitiesList.querySelector(
+          `[data-activity-name="${CSS.escape(currentSharedActivityName)}"]`
+        )
+      : null;
 
     if (!highlightedCard) {
       return;
@@ -581,7 +584,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     highlightedCard.classList.add("shared-activity");
 
-    if (hasScrolledToSharedActivity) {
+    if (hasScrolledToCurrentSharedActivity) {
       return;
     }
 
@@ -593,7 +596,7 @@ document.addEventListener("DOMContentLoaded", () => {
       behavior: prefersReducedMotion ? "auto" : "smooth",
       block: "center",
     });
-    hasScrolledToSharedActivity = true;
+    hasScrolledToCurrentSharedActivity = true;
   }
 
   // Function to render a single activity card
