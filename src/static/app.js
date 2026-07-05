@@ -366,7 +366,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return "academic";
   }
 
-  function getActivityDifficulty(details) {
+  function normalizeActivityDifficulty(details) {
     if (typeof details.difficulty !== "string") {
       return "";
     }
@@ -449,7 +449,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // Apply difficulty filter
-      const activityDifficulty = getActivityDifficulty(details);
+      const activityDifficulty = normalizeActivityDifficulty(details);
       if (currentDifficulty === "all-levels" && activityDifficulty) {
         return;
       }
