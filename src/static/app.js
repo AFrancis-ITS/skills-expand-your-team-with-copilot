@@ -335,7 +335,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function copyTextToClipboard(text) {
     if (navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(text);
-      return;
+      return true;
     }
 
     const temporaryTextArea = document.createElement("textarea");
@@ -345,13 +345,19 @@ document.addEventListener("DOMContentLoaded", () => {
     temporaryTextArea.style.left = "-9999px";
     document.body.appendChild(temporaryTextArea);
     temporaryTextArea.select();
-    document.execCommand("copy");
+    const wasCopied = document.execCommand("copy");
     document.body.removeChild(temporaryTextArea);
+    return wasCopied;
   }
 
   async function copyActivityLink(activityName) {
     try {
-      await copyTextToClipboard(buildActivityShareUrl(activityName));
+      const wasCopied = await copyTextToClipboard(buildActivityShareUrl(activityName));
+
+      if (!wasCopied) {
+        throw new Error("Copy command was not successful");
+      }
+
       showMessage(`${activityName} link copied. Share it with a friend!`, "success");
     } catch (error) {
       console.error("Error copying activity link:", error);
@@ -569,7 +575,14 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    highlightedCard.scrollIntoView({ behavior: "smooth", block: "center" });
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    highlightedCard.scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+      block: "center",
+    });
     hasScrolledToSharedActivity = true;
   }
 
