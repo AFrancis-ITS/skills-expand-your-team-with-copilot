@@ -30,6 +30,38 @@
   --error-light: #ffebee;
   --info: #0c5460;
   --info-light: #d1ecf1;
+  --header-control-bg: rgba(255, 255, 255, 0.2);
+  --header-control-hover-bg: rgba(255, 255, 255, 0.3);
+  --header-control-text: #ffffff;
+  --header-shadow: rgba(0, 0, 0, 0.16);
+  --card-shadow: rgba(0, 0, 0, 0.1);
+  --card-shadow-light: rgba(0, 0, 0, 0.05);
+  --card-shadow-hover: rgba(0, 0, 0, 0.1);
+  --primary-hover-light: #eef1ff;
+  --secondary-focus-ring: rgba(255, 111, 0, 0.2);
+}
+
+body.dark-mode {
+  --background: #121212;
+  --surface: #1e1e1e;
+  --text-primary: #f1f1f1;
+  --text-secondary: #c7c7c7;
+  --border: #3a3a3a;
+  --border-light: #2a2a2a;
+  --border-focus: #4d4d4d;
+  --success-light: #143d17;
+  --warning-light: #4d3908;
+  --error-light: #4a1717;
+  --info-light: #12313a;
+  --header-control-bg: rgba(255, 255, 255, 0.12);
+  --header-control-hover-bg: rgba(255, 255, 255, 0.2);
+  --header-control-text: #f1f1f1;
+  --header-shadow: rgba(0, 0, 0, 0.35);
+  --card-shadow: rgba(0, 0, 0, 0.35);
+  --card-shadow-light: rgba(0, 0, 0, 0.25);
+  --card-shadow-hover: rgba(0, 0, 0, 0.4);
+  --primary-hover-light: #283163;
+  --secondary-focus-ring: rgba(255, 111, 0, 0.35);
 }
 
 * {
@@ -57,7 +89,7 @@ header {
   background-color: var(--primary);
   color: var(--primary-text);
   border-radius: 5px;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 3px 6px var(--header-shadow);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -83,7 +115,7 @@ section {
   background-color: var(--surface);
   padding: 15px;
   border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 5px var(--card-shadow);
   width: 100%;
 }
 
@@ -106,7 +138,7 @@ section h3 {
   padding: 15px;
   background-color: var(--surface);
   border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 5px var(--card-shadow);
 }
 
 .sidebar-filters h3 {
@@ -157,7 +189,7 @@ section h3 {
   flex-direction: column;
   height: 100%;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 5px var(--card-shadow-light);
   position: relative;
   overflow: hidden;
   font-size: 0.85rem;
@@ -165,12 +197,12 @@ section h3 {
 
 .activity-card.shared-activity {
   border-color: var(--secondary);
-  box-shadow: 0 0 0 3px rgba(255, 111, 0, 0.2);
+  box-shadow: 0 0 0 3px var(--secondary-focus-ring);
 }
 
 .activity-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 15px var(--card-shadow-hover);
   border-color: var(--border-focus);
 }
 
@@ -216,7 +248,7 @@ section h3 {
 }
 
 .copy-link-button:hover {
-  background-color: #eef1ff;
+  background-color: var(--primary-hover-light);
 }
 
 /* Activity Tag */
@@ -655,6 +687,7 @@ footer {
 #user-status {
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 
 #user-info {
@@ -672,7 +705,8 @@ footer {
   display: flex;
   align-items: center;
   gap: 5px;
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: var(--header-control-bg);
+  color: var(--header-control-text);
   border-radius: 20px;
   padding: 4px 12px;
   font-size: 0.85rem;
@@ -680,7 +714,7 @@ footer {
 }
 
 .icon-button:hover {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: var(--header-control-hover-bg);
 }
 
 .user-icon {
@@ -689,11 +723,12 @@ footer {
 
 #logout-button {
   padding: 3px 10px;
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: var(--header-control-bg);
+  color: var(--header-control-text);
   font-size: 0.8rem;
   border-radius: 20px;
 }
 
 #logout-button:hover {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: var(--header-control-hover-bg);
 }

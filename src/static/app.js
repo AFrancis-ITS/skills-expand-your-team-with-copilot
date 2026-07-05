@@ -1,3 +1,5 @@
+const DEFAULT_SCHOOL_NAME = "Mergington High School";
+
 document.addEventListener("DOMContentLoaded", () => {
   // DOM elements
   const activitiesList = document.getElementById("activities-list");
@@ -21,13 +23,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const userInfo = document.getElementById("user-info");
   const displayName = document.getElementById("display-name");
   const logoutButton = document.getElementById("logout-button");
+  const themeToggle = document.getElementById("theme-toggle");
+  const themeToggleText = document.getElementById("theme-toggle-text");
+  const themeIcon = themeToggle.querySelector(".theme-icon");
   const loginModal = document.getElementById("login-modal");
   const loginForm = document.getElementById("login-form");
   const closeLoginModal = document.querySelector(".close-login-modal");
   const loginMessage = document.getElementById("login-message");
   const schoolName =
     document.querySelector("header h1")?.textContent?.trim() ||
-    "Mergington High School";
+    DEFAULT_SCHOOL_NAME;
 
   // Activity categories with corresponding colors
   const activityTypes = {
@@ -50,6 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Authentication state
   let currentUser = null;
+  let isDarkMode = false;
 
   // Time range mappings for the dropdown
   const timeRanges = {
@@ -57,6 +63,28 @@ document.addEventListener("DOMContentLoaded", () => {
     afternoon: { start: "15:00", end: "18:00" }, // After school hours
     weekend: { days: ["Saturday", "Sunday"] }, // Weekend days
   };
+
+  function applyTheme() {
+    document.body.classList.toggle("dark-mode", isDarkMode);
+    themeToggle.setAttribute("aria-pressed", String(isDarkMode));
+    themeToggle.setAttribute(
+      "aria-label",
+      isDarkMode ? "Switch to light mode" : "Switch to dark mode"
+    );
+    themeToggleText.textContent = isDarkMode ? "Light Mode" : "Dark Mode";
+    themeIcon.textContent = isDarkMode ? "☀️" : "🌙";
+  }
+
+  function initializeTheme() {
+    isDarkMode = localStorage.getItem("theme") === "dark";
+    applyTheme();
+  }
+
+  function toggleTheme() {
+    isDarkMode = !isDarkMode;
+    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+    applyTheme();
+  }
 
   function initializeSharedActivity() {
     const selectedActivity = new URLSearchParams(window.location.search).get(
@@ -256,6 +284,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Event listeners for authentication
+  themeToggle.addEventListener("click", toggleTheme);
   loginButton.addEventListener("click", openLoginModal);
   logoutButton.addEventListener("click", logout);
   closeLoginModal.addEventListener("click", closeLoginModalHandler);
@@ -353,6 +382,7 @@ document.addEventListener("DOMContentLoaded", () => {
     temporaryTextArea.style.left = "-9999px";
     document.body.appendChild(temporaryTextArea);
     temporaryTextArea.select();
+    // Legacy fallback for browsers that do not support the Clipboard API.
     const copySucceeded = document.execCommand("copy");
     document.body.removeChild(temporaryTextArea);
     return copySucceeded;
@@ -546,10 +576,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Apply difficulty filter
       const activityDifficulty = normalizeActivityDifficulty(details);
-      if (currentDifficulty === "all-levels" && activityDifficulty) {
-        return;
-      }
-
       if (
         currentDifficulty &&
         currentDifficulty !== "all-levels" &&
@@ -1049,6 +1075,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // Initialize app
+  initializeTheme();
   checkAuthentication();
   initializeFilters();
   initializeSharedActivity();
