@@ -284,6 +284,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Event listeners for authentication
+  themeToggle.addEventListener("click", toggleTheme);
   loginButton.addEventListener("click", openLoginModal);
   logoutButton.addEventListener("click", logout);
   closeLoginModal.addEventListener("click", closeLoginModalHandler);
@@ -797,7 +798,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Add event listeners to category filter buttons
-  themeToggle.addEventListener("click", toggleTheme);
   categoryFilters.forEach((button) => {
     button.addEventListener("click", () => {
       // Update active class
