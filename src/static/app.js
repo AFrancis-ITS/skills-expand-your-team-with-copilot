@@ -1,3 +1,5 @@
+const DEFAULT_SCHOOL_NAME = "Mergington High School";
+
 document.addEventListener("DOMContentLoaded", () => {
   // DOM elements
   const activitiesList = document.getElementById("activities-list");
@@ -30,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginMessage = document.getElementById("login-message");
   const schoolName =
     document.querySelector("header h1")?.textContent?.trim() ||
-    "Mergington High School";
+    DEFAULT_SCHOOL_NAME;
 
   // Activity categories with corresponding colors
   const activityTypes = {
@@ -379,6 +381,7 @@ document.addEventListener("DOMContentLoaded", () => {
     temporaryTextArea.style.left = "-9999px";
     document.body.appendChild(temporaryTextArea);
     temporaryTextArea.select();
+    // Legacy fallback for browsers that do not support the Clipboard API.
     const copySucceeded = document.execCommand("copy");
     document.body.removeChild(temporaryTextArea);
     return copySucceeded;
