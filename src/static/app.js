@@ -337,8 +337,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function copyTextToClipboard(text) {
     if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(text);
-      return true;
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (error) {
+        console.error("Clipboard API copy failed, trying fallback:", error);
+      }
     }
 
     const temporaryTextArea = document.createElement("textarea");
@@ -348,16 +352,16 @@ document.addEventListener("DOMContentLoaded", () => {
     temporaryTextArea.style.left = "-9999px";
     document.body.appendChild(temporaryTextArea);
     temporaryTextArea.select();
-    const wasCopied = document.execCommand("copy");
+    const isCopied = document.execCommand("copy");
     document.body.removeChild(temporaryTextArea);
-    return wasCopied;
+    return isCopied;
   }
 
   async function copyActivityLink(activityName) {
     try {
-      const wasCopied = await copyTextToClipboard(buildActivityShareUrl(activityName));
+      const isCopied = await copyTextToClipboard(buildActivityShareUrl(activityName));
 
-      if (!wasCopied) {
+      if (!isCopied) {
         throw new Error("Copy command was not successful");
       }
 
