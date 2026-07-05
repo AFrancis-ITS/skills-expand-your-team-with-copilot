@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("login-form");
   const closeLoginModal = document.querySelector(".close-login-modal");
   const loginMessage = document.getElementById("login-message");
+  const schoolName = "Mergington High School";
 
   // Activity categories with corresponding colors
   const activityTypes = {
@@ -327,7 +328,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function buildActivityShareText(activityName, details) {
-    return `Check out ${activityName} at Mergington High School. ${formatSchedule(
+    return `Check out ${activityName} at ${schoolName}. ${formatSchedule(
       details
     )}.`;
   }
@@ -361,7 +362,10 @@ document.addEventListener("DOMContentLoaded", () => {
       showMessage(`${activityName} link copied. Share it with a friend!`, "success");
     } catch (error) {
       console.error("Error copying activity link:", error);
-      showMessage("Unable to copy the activity link right now.", "error");
+      showMessage(
+        "We could not copy the link. Please try again or copy the page address manually.",
+        "error"
+      );
     }
   }
 
@@ -372,7 +376,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${activityName} | Mergington High School`,
+          title: `${activityName} | ${schoolName}`,
           text: shareText,
           url: shareUrl,
         });
